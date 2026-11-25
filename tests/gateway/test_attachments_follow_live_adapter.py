@@ -79,5 +79,6 @@ async def test_a_refused_image_upload_is_logged(tmp_path, caplog):
     with caplog.at_level(logging.WARNING, logger="gateway.platforms.base"):
         await _reply_with_image(adapter, tmp_path)
 
-    assert adapter.sent == ["Here is the preview."]
+    assert adapter.sent[0] == "Here is the preview."
+    assert "preview.png" in adapter.sent[1]  # the reply promised an image: say it did not arrive
     assert any("Not connected" in record.getMessage() for record in caplog.records)

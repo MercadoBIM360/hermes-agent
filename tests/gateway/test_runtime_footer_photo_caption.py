@@ -156,7 +156,7 @@ async def test_non_streamed_footer_is_sent_when_the_captioned_photo_failed(tmp_p
     await adapter._deliver_attachments(_event(), extracted, {}, anything_sent=False, record_delivery=outcomes.append)
 
     assert adapter.batches[-1][-1][1] == FOOTER
-    assert adapter.sent == [FOOTER]
+    assert len(adapter.sent) == 2 and adapter.sent[-1] == FOOTER  # after the photo's failure notice
 
     adapter.sent.clear()  # control: the photo landed, so no footer-only message
     adapter.send_multiple_images = _Adapter.send_multiple_images.__get__(adapter)

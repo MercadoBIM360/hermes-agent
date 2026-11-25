@@ -4144,6 +4144,13 @@ class BasePlatformAdapter(_SessionModelSettingsMixin, ABC):
             result = SendResult(success=False, error=str(batch_err))
         if result is not None and not result.success:
             logger.warning("[%s] %d image(s) not delivered: %s", self.name, len(images), result.error)
+            # The MEDIA tags are already stripped from the reply text: without a notice the user is told
+            # "the image below" and gets nothing. Same notice the non-image attachments send.
+            if not (isinstance(result.raw_response, dict) and result.raw_response.get("failure_notice_sent")):
+                from urllib.parse import unquote
+                for image_url, _alt in images:
+                    await self._notify_media_delivery_failure(
+                        event.source.chat_id, unquote(image_url.removeprefix("file://")), metadata=metadata)
         record_delivery(result)  # a footer the captioned photo lost goes out on its own (#74547):
         await send_footer_unless_captioned(self, event.source.chat_id, images, result, metadata, record_delivery)
 
